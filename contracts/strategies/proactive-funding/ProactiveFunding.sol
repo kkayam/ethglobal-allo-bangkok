@@ -21,11 +21,7 @@ contract ProactiveFunding is BaseStrategy {
         __BaseStrategy_init(_poolId);
         
         // Deploy new voucher contract
-        voucher = new ProactiveFundingVoucher(
-            address(allo),
-            _poolId,
-            address(this)
-        );
+        voucher = new ProactiveFundingVoucher(address(this));
         
         emit Initialized(_poolId, _data);
     }

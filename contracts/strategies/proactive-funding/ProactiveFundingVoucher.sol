@@ -13,7 +13,6 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
     using Counters for Counters.Counter;
     
     Counters.Counter private _tokenIds;
-    uint256 public poolId;
     address public proactiveFundingContract;
 
     mapping(uint256 => address) public tokenToWorker;
@@ -22,11 +21,10 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
     
     event VoucherMinted();
     
-    constructor(uint256 _poolId, address _proactiveFundingContract) 
+    constructor(address _proactiveFundingContract) 
         ERC721("ProactiveFunding Voucher", "PFV") 
         Ownable(msg.sender) 
     {
-        poolId = _poolId;
         proactiveFundingContract = _proactiveFundingContract;
     }
     
