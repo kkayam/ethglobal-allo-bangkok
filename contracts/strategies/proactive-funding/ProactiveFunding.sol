@@ -2,9 +2,13 @@
 pragma solidity ^0.8.19;
 
 import {BaseStrategy} from "../BaseStrategy.sol";
+import {ProactiveFundingVoucher} from "./ProactiveFundingVoucher.sol";
 
 contract ProactiveFunding is BaseStrategy {
     uint256 public constant HOURLY_RATE = 10000;
+    
+    ProactiveFundingVoucher public voucher;
+    
     event DirectAllocated(
         bytes32 indexed profileId, address profileOwner, uint256 amount, address token, address sender
     );
@@ -13,6 +17,14 @@ contract ProactiveFunding is BaseStrategy {
 
     function initialize(uint256 _poolId, bytes memory _data) external virtual override {
         __BaseStrategy_init(_poolId);
+        
+        // Deploy new voucher contract
+        voucher = new ProactiveFundingVoucher(
+            address(allo),
+            _poolId,
+            address(this)
+        );
+        
         emit Initialized(_poolId, _data);
     }
 
@@ -28,11 +40,12 @@ contract ProactiveFunding is BaseStrategy {
     /// @param _data The data to allocate
     /// @param _sender The sender
     function _allocate(bytes memory _data, address _sender) internal virtual override {
-        (address profileOwner, uint256 amount, address token, uint256 nonce) =
-            abi.decode(_data, (address, uint256, address, uint256));
+        (address PFVAddress, address token, uint256 nonce) =
+            abi.decode(_data, (address, address, uint256));
         bytes32 profileId = keccak256(abi.encodePacked(nonce, profileOwner));
-
-        _transferAmountFrom(token, TransferData({from: _sender, to: profileOwner, amount: amount}));
+        // Mint voucher to pool
+        uint256 tokenId = voucher.mintVoucherToPool();
+        _transferAmount(_token, _sender, _amount);
         emit DirectAllocated(profileId, profileOwner, amount, token, _sender);
     }
 
