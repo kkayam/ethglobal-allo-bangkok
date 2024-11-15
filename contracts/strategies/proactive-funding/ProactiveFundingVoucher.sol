@@ -46,4 +46,37 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
         emit VoucherMinted();
         return newTokenId;
     }
+
+    /**
+     * @notice Get all vouchers currently owned by the ProactiveFunding contract
+     * @return voucherIds Array of token IDs owned by the ProactiveFunding contract
+     * @return workers Array of worker addresses corresponding to each voucher
+     */
+    function getActiveVouchers() external view returns (uint256[] memory voucherIds, address[] memory workers) {
+        uint256 totalSupply = _tokenIds.current();
+        uint256 activeCount = 0;
+        
+        // First pass: count active vouchers
+        for (uint256 i = 1; i <= totalSupply; i++) {
+            if (_exists(i) && ownerOf(i) == proactiveFundingContract) {
+                activeCount++;
+            }
+        }
+        
+        // Initialize arrays with the correct size
+        voucherIds = new uint256[](activeCount);
+        workers = new address[](activeCount);
+        
+        // Second pass: populate arrays
+        uint256 currentIndex = 0;
+        for (uint256 i = 1; i <= totalSupply; i++) {
+            if (_exists(i) && ownerOf(i) == proactiveFundingContract) {
+                voucherIds[currentIndex] = i;
+                workers[currentIndex] = tokenToWorker[i];
+                currentIndex++;
+            }
+        }
+        
+        return (voucherIds, workers);
+    }
 } 
