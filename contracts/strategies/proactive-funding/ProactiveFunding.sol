@@ -5,7 +5,9 @@ import {BaseStrategy} from "../BaseStrategy.sol";
 import {ProactiveFundingVoucher} from "./ProactiveFundingVoucher.sol";
 
 contract ProactiveFunding is BaseStrategy {
-    uint256 public constant HOURLY_RATE = 10000;
+    uint256 public constant HOURLY_RATE = 10000; // TODO correct this later
+    uint256 public constant HOURS_PER_VOUCHER= 10;
+
     
     ProactiveFundingVoucher public voucher;
     
@@ -45,7 +47,7 @@ contract ProactiveFunding is BaseStrategy {
         bytes32 profileId = keccak256(abi.encodePacked(nonce, profileOwner));
         // Mint voucher to pool
         uint256 tokenId = voucher.mintVoucherToPool();
-        _transferAmount(_token, _sender, _amount);
+        _transferAmount(_token, _sender, HOURLY_RATE * HOURS_PER_VOUCHER);
         emit DirectAllocated(profileId, profileOwner, amount, token, _sender);
     }
 
