@@ -11,9 +11,13 @@ contract ProactiveFunding is BaseStrategy {
     
     ProactiveFundingVoucher public voucher;
     
+    error InvalidVoucher();
+    error UnauthorizedClaim();
+    
     event DirectAllocated(
         bytes32 indexed profileId, address profileOwner, uint256 amount, address token, address sender
     );
+    event VoucherClaimed(uint256 indexed tokenId, address indexed recipient);
 
     constructor(address _allo, string memory _name) BaseStrategy(_allo, _name) {}
 
@@ -32,6 +36,25 @@ contract ProactiveFunding is BaseStrategy {
     function withdraw(address _token, address _recipient) external onlyPoolManager(msg.sender) {
         uint256 amount = _getBalance(_token, address(this));
         _transferAmount(_token, _recipient, amount);
+    }
+
+    /// @notice Claim a specific voucher
+    /// @param _tokenId The ID of the voucher to claim
+    function claimVoucher(uint256 _tokenId) external {
+        // Check if the voucher exists and is owned by this contract
+        if (!voucher.ownerOf(_tokenId) == address(this)) {
+            revert InvalidVoucher();
+        }
+        
+        // Check if the caller is the worker associated with this voucher
+        if (msg.sender != voucher.tokenToWorker(_tokenId)) {
+            revert UnauthorizedClaim();
+        }
+
+        // Transfer the voucher to the caller
+        voucher.safeTransferFrom(address(this), msg.sender, _tokenId);
+        
+        emit VoucherClaimed(_tokenId, msg.sender);
     }
 
     /// Allocate funds to a recipient
@@ -56,6 +79,8 @@ contract ProactiveFunding is BaseStrategy {
     }
 
     // Not implemented
+
+    
 
     function _distribute(address[] memory, bytes memory, address) internal virtual override {
         revert NOT_IMPLEMENTED();
