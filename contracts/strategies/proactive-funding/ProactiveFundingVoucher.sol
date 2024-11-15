@@ -16,6 +16,8 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
     address public alloContract;
     uint256 public poolId;
     address public proactiveFundingContract;
+
+    mapping(uint256 => address) public tokenToWorker;
     
     error UnauthorizedMinter();
     
@@ -35,25 +37,17 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
      * @dev Only callable by the ProactiveFunding contract
      * @return tokenId The ID of the newly minted NFT
      */
-    function mintVoucherToPool() external returns (uint256) {
+    function mintVoucherToPool(address _worker) external returns (uint256) {
         if (msg.sender != proactiveFundingContract) {
             revert UnauthorizedMinter();
         }
         
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
-        
+        tokenToWorker[newTokenId] = _worker;
         _safeMint(alloContract, newTokenId);
         
         emit VoucherMinted();
         return newTokenId;
-    }
-
-    /**
-     * @notice Update the ProactiveFunding contract address
-     * @param _newProactiveFundingContract The new contract address
-     */
-    function setProactiveFundingContract(address _newProactiveFundingContract) external onlyOwner {
-        proactiveFundingContract = _newProactiveFundingContract;
     }
 } 

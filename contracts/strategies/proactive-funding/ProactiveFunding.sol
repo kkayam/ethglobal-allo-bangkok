@@ -46,7 +46,7 @@ contract ProactiveFunding is BaseStrategy {
             abi.decode(_data, (address, address, uint256));
         bytes32 profileId = keccak256(abi.encodePacked(nonce, profileOwner));
         // Mint voucher to pool
-        uint256 tokenId = voucher.mintVoucherToPool();
+        uint256 tokenId = voucher.mintVoucherToPool(_sender);
         _transferAmount(_token, _sender, HOURLY_RATE * HOURS_PER_VOUCHER);
         emit DirectAllocated(profileId, profileOwner, amount, token, _sender);
     }
