@@ -23,16 +23,15 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
     
     constructor(address _proactiveFundingContract) 
         ERC721("ProactiveFunding Voucher", "PFV") 
-        Ownable(msg.sender) 
+        Ownable()
     {
         proactiveFundingContract = _proactiveFundingContract;
     }
+
+    function totalSupply() public view returns (uint256) {
+        return _tokenIds.current();
+    }
     
-    /**
-     * @notice Mint a new voucher NFT to the pool
-     * @dev Only callable by the ProactiveFunding contract
-     * @return tokenId The ID of the newly minted NFT
-     */
     function mintVoucherToPool(address _worker) external returns (uint256) {
         if (msg.sender != proactiveFundingContract) {
             revert UnauthorizedMinter();
@@ -41,23 +40,18 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
         _tokenIds.increment();
         uint256 newTokenId = _tokenIds.current();
         tokenToWorker[newTokenId] = _worker;
-        _safeMint(proactiveFundingContract, newTokenId);
+        _mint(proactiveFundingContract, newTokenId);
         
         emit VoucherMinted();
         return newTokenId;
     }
 
-    /**
-     * @notice Get all vouchers currently owned by the ProactiveFunding contract
-     * @return voucherIds Array of token IDs owned by the ProactiveFunding contract
-     * @return workers Array of worker addresses corresponding to each voucher
-     */
     function getActiveVouchers() external view returns (uint256[] memory voucherIds, address[] memory workers) {
-        uint256 totalSupply = _tokenIds.current();
+        uint256 total = _tokenIds.current();
         uint256 activeCount = 0;
         
         // First pass: count active vouchers
-        for (uint256 i = 1; i <= totalSupply; i++) {
+        for (uint256 i = 1; i <= total; i++) {
             if (_exists(i) && ownerOf(i) == proactiveFundingContract) {
                 activeCount++;
             }
@@ -69,7 +63,7 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
         
         // Second pass: populate arrays
         uint256 currentIndex = 0;
-        for (uint256 i = 1; i <= totalSupply; i++) {
+        for (uint256 i = 1; i <= total; i++) {
             if (_exists(i) && ownerOf(i) == proactiveFundingContract) {
                 voucherIds[currentIndex] = i;
                 workers[currentIndex] = tokenToWorker[i];
