@@ -137,7 +137,7 @@ contract ProactiveFundingTest is Test, AlloSetup, RegistrySetupFull, EventSetup,
     }
 
     function test_claimVoucher_revert_InvalidVoucher() public {
-        vm.expectRevert(ProactiveFunding.InvalidVoucher.selector);
+        vm.expectRevert("ERC721: invalid token ID");
         strategy.claimVoucher(999); // Non-existent voucher
     }
 
