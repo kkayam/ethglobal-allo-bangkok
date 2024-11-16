@@ -79,9 +79,8 @@ contract ProactiveFunding is BaseStrategy {
 
         emit DirectAllocated(profileId, worker, amount, token, _sender);
     }
-
     receive() external payable {
-        revert NOT_IMPLEMENTED();
+        // Allow receiving funds
     }
 
     function _beforeIncreasePoolAmount(uint256) internal virtual override {
