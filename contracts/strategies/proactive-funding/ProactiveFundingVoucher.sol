@@ -2,15 +2,14 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title ProactiveFundingVoucher
  * @notice A simple NFT contract for ProactiveFunding vouchers
  */
-contract ProactiveFundingVoucher is ERC721, Ownable {
+contract ProactiveFundingVoucher is ERC721 {
     uint256 private _currentTokenId;
-    address public proactiveFundingContract;
+    address public immutable proactiveFundingContract;
 
     mapping(uint256 => address) public tokenToWorker;
     
@@ -20,7 +19,6 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
     
     constructor(address _proactiveFundingContract) 
         ERC721("ProactiveFunding Voucher", "PFV") 
-        Ownable()
     {
         proactiveFundingContract = _proactiveFundingContract;
     }
