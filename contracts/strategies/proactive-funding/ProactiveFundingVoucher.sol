@@ -3,16 +3,13 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 /**
  * @title ProactiveFundingVoucher
  * @notice A simple NFT contract for ProactiveFunding vouchers
  */
 contract ProactiveFundingVoucher is ERC721, Ownable {
-    using Counters for Counters.Counter;
-    
-    Counters.Counter private _tokenIds;
+    uint256 private _currentTokenId;
     address public proactiveFundingContract;
 
     mapping(uint256 => address) public tokenToWorker;
@@ -29,7 +26,7 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
     }
 
     function totalSupply() public view returns (uint256) {
-        return _tokenIds.current();
+        return _currentTokenId;
     }
     
     function mintVoucherToPool(address _worker) external returns (uint256) {
@@ -37,8 +34,8 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
             revert UnauthorizedMinter();
         }
         
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
+        _currentTokenId++;
+        uint256 newTokenId = _currentTokenId;
         tokenToWorker[newTokenId] = _worker;
         _mint(proactiveFundingContract, newTokenId);
         
@@ -47,7 +44,7 @@ contract ProactiveFundingVoucher is ERC721, Ownable {
     }
 
     function getActiveVouchers() external view returns (uint256[] memory voucherIds, address[] memory workers) {
-        uint256 total = _tokenIds.current();
+        uint256 total = _currentTokenId;
         uint256 activeCount = 0;
         
         // First pass: count active vouchers
