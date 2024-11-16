@@ -60,7 +60,7 @@ contract ProactiveFunding is BaseStrategy {
     /// Allocate funds to a recipient
     /// @param _data The data to allocate
     /// @param _sender The sender
-    function _allocate(bytes memory _data, address _sender) internal virtual override {
+    function _allocate(address[] memory _recipients, uint256[] memory _amounts, bytes memory _data, address _sender) internal virtual override {
         // Decode the worker address, token, and nonce from the input data
         (address worker, address token, uint256 nonce) =
             abi.decode(_data, (address, address, uint256));
@@ -91,7 +91,7 @@ contract ProactiveFunding is BaseStrategy {
 
     
 
-    function _distribute(address[] memory, bytes memory, address) internal virtual override {
+    function _distribute(address[] memory _recipientIds, bytes memory _data, address _sender) internal virtual override {
         revert NOT_IMPLEMENTED();
     }
 
@@ -110,4 +110,19 @@ contract ProactiveFunding is BaseStrategy {
         override
         returns (PayoutSummary memory)
     {}
+    function _register(address[] memory _recipients, bytes memory _data, address _sender)
+    internal
+    virtual
+    override
+    returns (address[] memory _recipientIds){
+        
+        uint256 _length = _recipients.length;
+        for (uint256 _i; _i < _length; _i++) {
+            address _recipient = _recipients[_i];
+            if (_recipient == address(0)) {
+                revert SWV_InvalidRecipient();
+            }
+            recipients[_recipient] = true;
+        }
+    }
 }
