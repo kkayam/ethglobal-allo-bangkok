@@ -69,7 +69,7 @@ contract ProactiveFunding is BaseStrategy {
         uint256 amount = HOURLY_RATE * HOURS_PER_VOUCHER;
 
         // Mint voucher to pool and set worker
-        uint256 tokenId = voucher.mintVoucherToPool(worker);
+        voucher.mintVoucherToPool(worker);
 
         // Transfer tokens from sender to worker
         _transferAmount(token, worker, amount);
