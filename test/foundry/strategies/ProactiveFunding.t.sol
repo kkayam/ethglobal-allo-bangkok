@@ -75,6 +75,9 @@ contract ProactiveFundingTest is Test, AlloSetup, RegistrySetupFull, EventSetup,
         
         uint256 balanceBefore = mockERC20.balanceOf(address(this));
         console.log("Initial balance:", balanceBefore);
+        // Send a large amount of tokens to the strategy for testing
+        mockERC20.transfer(address(strategy), 500_000 * 1e18);
+        console.log("Transferred tokens to strategy:", 500_000 * 1e18);
 
         console.log("Calling allocate on Allo contract");
         allo().allocate(poolId, data);
