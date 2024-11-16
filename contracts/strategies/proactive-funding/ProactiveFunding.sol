@@ -42,7 +42,7 @@ contract ProactiveFunding is BaseStrategy {
     /// @param _tokenId The ID of the voucher to claim
     function claimVoucher(uint256 _tokenId) external {
         // Check if the voucher exists and is owned by this contract
-        if (!voucher.ownerOf(_tokenId) == address(this)) {
+        if (voucher.ownerOf(_tokenId) != address(this)) {
             revert InvalidVoucher();
         }
         
@@ -61,13 +61,23 @@ contract ProactiveFunding is BaseStrategy {
     /// @param _data The data to allocate
     /// @param _sender The sender
     function _allocate(bytes memory _data, address _sender) internal virtual override {
-        (address PFVAddress, address token, uint256 nonce) =
+        // Decode the worker address, token, and nonce from the input data
+        (address worker, address token, uint256 nonce) =
             abi.decode(_data, (address, address, uint256));
-        bytes32 profileId = keccak256(abi.encodePacked(nonce, profileOwner));
-        // Mint voucher to pool
-        uint256 tokenId = voucher.mintVoucherToPool(_sender);
-        _transferAmount(_token, _sender, HOURLY_RATE * HOURS_PER_VOUCHER);
-        emit DirectAllocated(profileId, profileOwner, amount, token, _sender);
+
+        // Calculate amount based on hourly rate and hours per voucher
+        uint256 amount = HOURLY_RATE * HOURS_PER_VOUCHER;
+
+        // Mint voucher to pool and set worker
+        uint256 tokenId = voucher.mintVoucherToPool(worker);
+
+        // Transfer tokens from sender to worker
+        _transferAmount(token, worker, amount);
+
+        // Get profile ID from worker address and nonce
+        bytes32 profileId = keccak256(abi.encodePacked(nonce, worker));
+
+        emit DirectAllocated(profileId, worker, amount, token, _sender);
     }
 
     receive() external payable {
